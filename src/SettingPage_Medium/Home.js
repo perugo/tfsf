@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import React, { useState, useEffect, useRef, useMemo, createRef } from 'react';
+import React, { useState, useEffect } from 'react';
 
 const MainContentWrapper = styled.div`
   padding-left:10px;
@@ -214,40 +214,6 @@ const MediumColorIcon = styled.div`
   margin:3px 3px 3px 3px;
   border:1px solid black;
 `
-const ButtonDownloadWrapper = styled.div`
-  margin-top:30px;
-  margin-bottom:15px;
-  text-align: center
-`
-const ButtonDownload = styled.div`
-  backface-visibility: hidden;
-  background-color:rgb(255,153,0);
-  border: 0;
-  border-radius: .3rem;
-  box-sizing: border-box;
-  color:rgb(0,0,0);
-  cursor: pointer;
-  display: inline-block;
-  font-family: Circular,Helvetica,sans-serif;
-  font-size: 1.2rem;
-  font-weight: 600;
-  line-height: 1.1;
-  padding: 10px 25px;
-  position: relative;
-  text-align: left;
-  text-decoration: none;
-  transition: transform .2s;
-  user-select: none;
-  -webkit-user-select: none;
-  touch-action: manipulation;
-
-  &:hover{
-    background-color:rgb(236,114,17);
-  }
-  &:active{
-    background-color:#EB5F07;
-  }
-`
 const SVGWrapper = styled.div`
   height: 20px;
   width: 26px;
@@ -373,13 +339,13 @@ const sections = [
 ];
 const mediumField = ['DielectricConstant', 'DielectricLoss', 'MagneticConstant', 'MagneticLoss'];
 
-export const Home = ({ mediumColor, medium, setShowWindow, setMedium }) => {
+export const Home = ({medium,setMedium, setShowWindow}) => {
   const [inputMedium, setInputMedium] = useState([]);
   const [defaultMedium, setDefaultMedium] = useState([]);
   const [hoveredItemId, setHoveredItemId] = useState(-1);
   const [errorlog, setErrorLog] = useState([]);
   useEffect(() => {
-    if (!medium && !mediumColor && !medium.length >= 1) return;
+    if (!medium && !medium.length >= 1) return;
     const stringDefaultMedium = medium.slice(0, 1).map(item => ({
       "DielectricConstant": item.DielectricConstant.toString(),
       "DielectricLoss": item.DielectricLoss.toString(),
@@ -395,7 +361,7 @@ export const Home = ({ mediumColor, medium, setShowWindow, setMedium }) => {
     setDefaultMedium(stringDefaultMedium);
     setInputMedium(stringMedium);
 
-  }, [medium, mediumColor])
+  }, [medium])
 
   const handleInputChange = (columnIndex, field, value) => {
     if (!/^[0-9.]*$/.test(value)) return;
@@ -453,35 +419,8 @@ export const Home = ({ mediumColor, medium, setShowWindow, setMedium }) => {
       setErrorLog(error);
     }
   }
-  const MediumInput = ({ index, field, value, handleInputChange }) => (
-    <Input>
-      <InputCell>
-        <InputText
-          maxLength="13"
-          type="text"
-          value={value}
-          onChange={(e) => handleInputChange(index, field, e.target.value)}
-        />
-      </InputCell>
-    </Input>
-  );
-  const InputField = React.memo(({ value, onChange, onKeyDown, maxLength, type }) => {
-    return (
-      <Input>
-        <InputCell>
-          <InputText
-            maxLength={maxLength}
-            type={type}
-            value={value}
-            onChange={onChange}
-            onKeyDown={onKeyDown}
-          />
-        </InputCell>
-      </Input>
-    );
-  });
+
   return (
-    <div className="App">
       <MainContentWrapper>
         <MainContentInner>
           <RightSide>
@@ -618,7 +557,6 @@ export const Home = ({ mediumColor, medium, setShowWindow, setMedium }) => {
           </RightSide>
         </MainContentInner>
       </MainContentWrapper>
-    </div>
   );
 };
 

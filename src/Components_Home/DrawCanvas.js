@@ -100,7 +100,7 @@ export const DrawCanvas = ({ drawData, setBitmap, selectedIndex, rect, setSettin
       console.log("no change");
       return;
     } else if (check_BITMAPCHANGEOBJECTVALID(prevDrawDataRef.current,drawData) && compare_RectNOCHANGE(prevRect, width, height)) {
-      console.error("only bitmapChangeObject");
+      console.log("only bitmapChangeObject");
       bitmap = drawData.bitmapChangeObject;
       draw_canvas(ctx3Ref.current, ctx1Ref.current, fieldX, width, height, freq, totalPointsX, totalPointsY, scatteredPointsX, scatteredPointsY, canvasDx, theta, bitmap);
       everyBitmapDraw(ctx2Ref.current, medium, width, canvasDx, scatteredPointsX, scatteredPointsY, totalPointsX, totalPointsY, bitmap, MEDIUM_COLOR);
@@ -203,12 +203,14 @@ export const DrawCanvas = ({ drawData, setBitmap, selectedIndex, rect, setSettin
   };
   const handleUpdateField = (xCIE, yCIE, TPX, TPY) => {
     clearTimeout(timerFieldRef.current);
-    if (TPX < 30 || TPY < 30) {
+    if (TPX < 20 || TPY < 20) {
       return;
     }
+    /*
     if(TPX>1.7*TPY || TPY>1.7*TPX){
       return;
     }
+    */
     timerFieldRef.current = setTimeout(handleFieldTimeout, 200);
     TMPscatteredPointsX = xCIE;
     TMPscatteredPointsY = yCIE;

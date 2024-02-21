@@ -1,11 +1,13 @@
 export const DEFAULT = {
 
+
   SETTING: {
     fieldX: 0.48, fieldY: 0.38,
-    totalPointsX: 120, totalPointsY: 120,
+    totalPointsX: 125, totalPointsY: 110,
     scatteredPointsX: 100,
-    freq: 10e9, theta: 0
+    freq: 13e9, theta:0
   },
+
   MEDIUM: [
     { "DielectricConstant": 1, "DielectricLoss": 0, "MagneticConstant": 1, "MagneticLoss": 0 },
     { "DielectricConstant": 1.5, "DielectricLoss": 0, "MagneticConstant": 1, "MagneticLoss": 0 },
@@ -15,12 +17,12 @@ export const DEFAULT = {
   ],
   BITMAP: [],
   AMPLITUDESCALER: {
-    "Select": "SineWave", "simulationNum": 700,
+    "Select": "SineWave", "simulationNum": 1000,
     "SineWave": { "slope": -0.11, "shift": 60 },
     "Pulse": { "peakPosition": 100, "widthFactor": 2.5 }
   },
   COLOR: {
-    colorThreshold: 1.2,
+    colorThreshold: 1.1,
     colorTransitionIndex: 0
   }
 }

@@ -33,7 +33,7 @@ var nx;
 var ny;
 var pmlL;
 var dx;
-const interval = 80;
+const interval =90;
 const drawcanvasrate = 4;
 var filmnum = 100;
 var filmcounter = 0;
@@ -54,7 +54,10 @@ export const SimulationCanvas = ({ simulationData, showSimulation, setShowSimula
 
   useEffect(() => {
     movevideoRef.current = true;
-    if (ctxRef.current) ctxRef.current.clearRect(0, 0, RECT.width, RECT.height);
+    if (ctxRef.current) {
+      ctxRef.current.clearRect(0, 0, RECT.width, RECT.height);
+      ctxbackgroundRef.current.clearRect(0,0,RECT.width,RECT.height);
+    }
 
     if (!checker_FDTDINPUT(FDTD_Input) || RECT.width === 0) return;
     console.log("FDTD_INPUT useEffect");
@@ -70,7 +73,6 @@ export const SimulationCanvas = ({ simulationData, showSimulation, setShowSimula
     ny = inputNy;
     pmlL = inputPmlL;
     dx = RECT.width / (nx - pmlL * 2);
-    console.log(nx + " : " + ny + " " + dx);
     filmnum = simulationNum / drawcanvasrate;
     requestAnimationFrame(Program);
     drawBackGround(ctxbackgroundRef.current, bitmap, totalPointsX, totalPointsY, scatteredPointsX, scatteredPointsY);
@@ -95,7 +97,10 @@ export const SimulationCanvas = ({ simulationData, showSimulation, setShowSimula
     setMoveVideo(true);
     if (!showSimulation) {
       FDTD2D_PMLRef.current = null;
-      if (ctxRef.current) ctxRef.current.clearRect(0, 0, RECT.width, RECT.height);
+      if (ctxRef.current) {
+        ctxRef.current.clearRect(0, 0, RECT.width, RECT.height);
+        ctxbackgroundRef.current.clearRect(0,0,RECT.width,RECT.height);
+      }
     }
     showSimulationRef.current = showSimulation;
   }, [showSimulation]);
@@ -133,20 +138,12 @@ export const SimulationCanvas = ({ simulationData, showSimulation, setShowSimula
       }
     }
   }
-  const drawbackground = (ctx, bitmap) => {
-    for (var i = 0; i < nx - pmlL * 2; i++) {
-      for (var n = 0; n < ny - pmlL * 2; n++) {
-        ctx.fillStyle = MEDIUM_COLOR[bitmap[i][n]];
-        ctx.fillRect((i - pmlL) * dx, (n - pmlL) * dx, dx + 1, dx + 1);
-      }
-    }
-  }
   function drawBackGround(ctx, bitmap, totalPointsX, totalPointsY, scatteredPointsX, scatteredPointsY) {
     //line(scatteredPointsX * dx, scatteredPointsY * dx, (scatteredPointsX+totalPointsX)*dx, scatteredPointsY*dx, 2, "rgba(30,30,30,1)");
     //line((scatteredPointsX+totalPointsX)* dx,scatteredPointsY * dx, (scatteredPointsX+totalPointsX)*dx, (scatteredPointsY+totalPointsY)*dx,2, "rgba(30,30,30,1)");
     //line((scatteredPointsX+totalPointsX)*dx, (scatteredPointsY+totalPointsY)*dx, scatteredPointsX*dx, (scatteredPointsY+totalPointsY)*dx, 2, "rgba(30,30,30,1)");
     //line(scatteredPointsX * dx, (scatteredPointsX+totalPointsX)*dx, scatteredPointsX*dx, scatteredPointsY*dx, 2, "rgba(30,30,30,1)");
-
+    ctx.clearRect(0,0,nx*dx,ny*dx);
     function line(x1, y1, x2, y2, w, col) {
       ctx.strokeStyle = col;
       ctx.lineWidth = w;
@@ -158,7 +155,6 @@ export const SimulationCanvas = ({ simulationData, showSimulation, setShowSimula
 
     ctx.fillStyle = "rgba(0,0,255,0.3)";
 
-    console.log(bitmap);
     for (var i = 0; i < totalPointsX; i++) {
       for (var n = 0; n < totalPointsY; n++) {
         ctx.fillStyle = MEDIUM_COLOR[bitmap[i][n]];
@@ -166,12 +162,35 @@ export const SimulationCanvas = ({ simulationData, showSimulation, setShowSimula
       }
     }
 
+
+    const pad=1;
+    const canvasDx=dx;
+    lineTF(scatteredPointsX*canvasDx-pad,scatteredPointsY*canvasDx-pad,(scatteredPointsX+totalPointsX)*canvasDx+pad,scatteredPointsY*canvasDx-pad);
+    lineTF((scatteredPointsX+totalPointsX)*canvasDx+pad,scatteredPointsY*canvasDx-pad,(scatteredPointsX+totalPointsX)*canvasDx+pad,(scatteredPointsY+totalPointsY)*canvasDx+pad);
+    lineTF((scatteredPointsX+totalPointsX)*canvasDx+pad,(scatteredPointsY+totalPointsY)*canvasDx+pad,scatteredPointsX*canvasDx-pad,(scatteredPointsY+totalPointsY)*canvasDx+pad);
+    lineTF(scatteredPointsX*canvasDx-pad,(scatteredPointsY+totalPointsY)*canvasDx+pad,scatteredPointsX*canvasDx-pad,scatteredPointsY*canvasDx-pad);
+  
+    function lineTF(x1,y1,x2,y2) {
+      var dashPattern = [9, 6];
+      // 点線のスタイルを設定
+      ctx.setLineDash(dashPattern);
+      // 線の色を設定
+      ctx.strokeStyle = 'rgb(50,50,50)';
+      // 線の太さを設定
+      ctx.lineWidth = 2;
+      // 線を描画
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+  
+    }
   };
   return (
     <Container>
       <Layout_Wrapper onClick={stopvideo} ref={layoutWrapperRef}>
         <Canvas ref={canvas1Ref} />
-        <Canvas ref={canvasbackgroundRef} style={{ opacity: "0.2" }} />
+        <Canvas ref={canvasbackgroundRef} style={{ opacity: "0.1" }} />
       </Layout_Wrapper>
     </Container>
   )

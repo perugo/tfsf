@@ -127,7 +127,7 @@ export const BoxColorTransition = ({ color, setColor }) => {
                 handleStyle={{ fontSize: '18px' }}
               />
             </SliderWrapper>
-            <TransitionsWrapper style={{ marginLeft: "-5px" }}>
+            <TransitionsWrapper style={{ marginLeft: "-5px",backgroundColor:"rgb(255,255,255)" }}>
               <Transition >
                 <TransitionText>色遷移</TransitionText>
                 <SVGWrapper>

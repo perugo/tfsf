@@ -73,13 +73,13 @@ function check_MEDIUM_NOCHANGE(obj1, obj2) {
   return true;
 }
 
-export function check_BITMAPCHANGEOBJECTVALID(obj1,obj2){
-  if(!obj1 || !obj2)return false;
-  if(!obj2.bitmapChangeObject)return false;
-  const bitmap=obj2.bitmapChangeObject;
-  if(bitmap.length<=5)return false;
+export function check_BITMAPCHANGEOBJECTVALID(obj1, obj2) {
+  if (!obj1 || !obj2) return false;
+  if (!obj2.bitmapChangeObject) return false;
+  const bitmap = obj2.bitmapChangeObject;
+  if (bitmap.length <= 5) return false;
   return true;
-  
+
 }
 export function checker_CLEARBITMAP(obj, obj2) {
   if (!obj || !obj2) return false;
@@ -142,24 +142,54 @@ export const useCanvasAndWidthHeight = (layoutWrapperRef, setWidth, setHeight) =
 export function draw_canvas_background(ctx, canvasDx, xnum, ynum, scatteredPointsX, scatteredPointsY, totalPointsX, totalPointsY) {
   const WIDTH = canvasDx * xnum; const HEIGHT = canvasDx * ynum;
   ctx.clearRect(0, 0, WIDTH, HEIGHT);
-  line(0, 1, WIDTH, 1, 2, "black");
-  line(1, 0, 1, HEIGHT, 2, "black");
-  line(0, HEIGHT - 1, WIDTH, HEIGHT - 1, 2, "black");
-  line(WIDTH - 1, 0, WIDTH - 1, HEIGHT, 2, "black");
+  lineAnalysis(0, 1, WIDTH, 1);
+  lineAnalysis(1, 0, 1, HEIGHT);
+  lineAnalysis(0, HEIGHT - 1, WIDTH, HEIGHT - 1);
+  lineAnalysis(WIDTH - 1, 0, WIDTH - 1, HEIGHT);
   for (var i = scatteredPointsX; i < scatteredPointsX + totalPointsX; i++) {
-    line(canvasDx * i, scatteredPointsY * canvasDx, canvasDx * i, canvasDx * (scatteredPointsY + totalPointsY), 1, "rgba(0,0,0,0.1)");
+    lineGrid(canvasDx * i, scatteredPointsY * canvasDx, canvasDx * i, canvasDx * (scatteredPointsY + totalPointsY));
   }
   for (let n = scatteredPointsY; n < scatteredPointsY + totalPointsY; n++) {
-    line(scatteredPointsX * canvasDx, n * canvasDx, canvasDx * (scatteredPointsX + totalPointsX), canvasDx * n, 1, "rgba(0,0,0,0.1)");
+    lineGrid(scatteredPointsX * canvasDx, n * canvasDx, canvasDx * (scatteredPointsX + totalPointsX), canvasDx * n);
   }
+  const pad=1;
+  
+  lineTF(scatteredPointsX*canvasDx-pad,scatteredPointsY*canvasDx-pad,(scatteredPointsX+totalPointsX)*canvasDx+pad,scatteredPointsY*canvasDx-pad);
+  lineTF((scatteredPointsX+totalPointsX)*canvasDx+pad,scatteredPointsY*canvasDx-pad,(scatteredPointsX+totalPointsX)*canvasDx+pad,(scatteredPointsY+totalPointsY)*canvasDx+pad);
+  lineTF((scatteredPointsX+totalPointsX)*canvasDx+pad,(scatteredPointsY+totalPointsY)*canvasDx+pad,scatteredPointsX*canvasDx-pad,(scatteredPointsY+totalPointsY)*canvasDx+pad);
+  lineTF(scatteredPointsX*canvasDx-pad,(scatteredPointsY+totalPointsY)*canvasDx+pad,scatteredPointsX*canvasDx-pad,scatteredPointsY*canvasDx-pad);
 
-  function line(x1, y1, x2, y2, w, col) {
-    ctx.strokeStyle = col;
-    ctx.lineWidth = w;
+
+  function lineAnalysis(x1, y1, x2, y2) {
+    ctx.strokeStyle = "black";
+    ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.moveTo(x1, y1);
     ctx.lineTo(x2, y2);
     ctx.stroke();
+  }
+  function lineGrid(x1, y1, x2, y2) {
+    ctx.strokeStyle = "rgba(0,0,0,0.1)";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+  }
+  function lineTF(x1,y1,x2,y2) {
+    var dashPattern = [9, 6];
+    // 点線のスタイルを設定
+    ctx.setLineDash(dashPattern);
+    // 線の色を設定
+    ctx.strokeStyle = 'rgba(50,50,50,0.3)';
+    // 線の太さを設定
+    ctx.lineWidth = 2;
+    // 線を描画
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+
   }
 }
 
@@ -227,7 +257,7 @@ export function draw_canvas(ctx, ctx1, fieldX, width, height, freq, totalPointsX
   }
   ctx.restore();
 
-  
+
   for (let i = 0; i < totalPointsX; i++) {
     for (let n = 0; n < totalPointsY; n++) {
       if (bitmap[i][n] !== 0) {
@@ -235,7 +265,7 @@ export function draw_canvas(ctx, ctx1, fieldX, width, height, freq, totalPointsX
       }
     }
   }
-  
+
   function drawFromCenter(X, Y, Ang, Len) {
     // 角度をラジアンに変換
     const radians = Ang * Math.PI / 180;
@@ -272,6 +302,10 @@ export function draw_canvas(ctx, ctx1, fieldX, width, height, freq, totalPointsX
 }
 function clipPointTheta(totalPointsX, totalPointsY, theta, bitmap) {
   let clipPoint;
+  if (!check_BITMAP(bitmap, totalPointsX, totalPointsY)) {
+    const clipEMPTY = [];
+    return clipEMPTY;
+  }
   if (theta < 90) {
     clipPoint = clipPointTheta0_89(totalPointsX, totalPointsY, theta, bitmap);
   } else if (theta < 180) {
@@ -282,6 +316,11 @@ function clipPointTheta(totalPointsX, totalPointsY, theta, bitmap) {
     clipPoint = clipPointTheta270_359(totalPointsX, totalPointsY, theta, bitmap);
   }
   return clipPoint;
+}
+function check_BITMAP(bitmap, totalPointsX, totalPointsY) {
+  if (bitmap.length !== totalPointsX) return false;
+  if (!bitmap.every(subArray => Array.isArray(subArray) && subArray.length === totalPointsY)) return false;
+  return true;
 }
 
 function clipPointTheta0_89(totalPointsX, totalPointsY, theta, bitmap) {
@@ -340,7 +379,7 @@ function clipPointTheta90_179(totalPointsX, totalPointsY, theta, bitmap) {
       y += stepSize * (Math.sin(theta * Math.PI / 180));
       v = bitmap[Math.round(x)][Math.round(y)];
     }
-   // if (y >= totalPointsY - 1) { y += 1; }
+    // if (y >= totalPointsY - 1) { y += 1; }
 
     clippoint.push([Math.round(x), Math.round(y)]);
   }

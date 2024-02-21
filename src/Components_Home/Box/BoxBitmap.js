@@ -124,7 +124,8 @@ const FormatOptionLabel = ({ option }) => {
 
 const MediumObjectSelection = [
   { name: "正方形" },
-  { name: "円" }
+  { name: "円形" },
+  { name: "開放空洞" }
 ];
 export const BoxBitmap = ({ setting, setBitmapChangeObject, medium }) => {
   const [dispRadius, setDispRadius] = useState(0);//rc-sliderが少数点の値を扱えないため、colorThreshold*100したもの
@@ -182,6 +183,7 @@ export const BoxBitmap = ({ setting, setBitmapChangeObject, medium }) => {
   useEffect(() => {
     if (selectedIndex === 0) setLabelName("一辺の格子幅");
     if (selectedIndex === 1) setLabelName("直径の格子幅");
+    if (selectedIndex === 2) setLabelName("y軸の格子幅");
     calc();
   }, [selectedIndex])
 
@@ -195,12 +197,25 @@ export const BoxBitmap = ({ setting, setBitmapChangeObject, medium }) => {
   const handleOnChange = (option) => {
     setSelectedOption(option);
     setSelectedOptionIndex(option.value);
+
     if (selectedIndex === 0) setRectangle(dispRadius, setting, option.value + 1, setBitmapChangeObject);
     if (selectedIndex === 1) setCircle(dispRadius, setting, option.value + 1, setBitmapChangeObject);
+    if (selectedIndex === 2) setOpenCavity(dispRadius, setting, option.value + 1, setBitmapChangeObject);
+
+
   };
   const calc = () => {
     if (selectedIndex === 0) setRectangle(dispRadius, setting, selectedOptionIndex + 1, setBitmapChangeObject);
     if (selectedIndex === 1) setCircle(dispRadius, setting, selectedOptionIndex + 1, setBitmapChangeObject);
+    if (selectedIndex === 2) {
+      if (options.length >= 2) {
+        setSelectedOption(options[2]);
+        setSelectedOptionIndex(options[2].value);
+        setOpenCavity(dispRadius, setting, 3, setBitmapChangeObject);
+      } else {
+        setOpenCavity(dispRadius, setting, selectedOptionIndex + 1, setBitmapChangeObject);
+      }
+    }
   }
   return (
     <Box style={{ overflow: "visible" }}>
@@ -208,7 +223,7 @@ export const BoxBitmap = ({ setting, setBitmapChangeObject, medium }) => {
         <FrontHeaderInner>
           <FrontHeaderLeft>
             <TitleWrapper>
-              <CustomH3>媒質設置</CustomH3>
+              <CustomH3>例</CustomH3>
             </TitleWrapper>
           </FrontHeaderLeft>
         </FrontHeaderInner>
@@ -219,7 +234,7 @@ export const BoxBitmap = ({ setting, setBitmapChangeObject, medium }) => {
           <GridColumn>
             <InputItemGrid>
               <JustFlexRow>
-                <Label style={{ marginLeft: "-3px", marginRight: "10px" }}>選択中の媒質: </Label>
+                <Label style={{ marginLeft: "-3px", marginRight: "10px" }}>媒質の選択: </Label>
                 <Select
                   options={optionList}
                   styles={customStyles}
@@ -291,8 +306,8 @@ const setInitialMarks = (setRadiusMin, setRadiusMax, totalPointsX, totalPointsY)
       initialMarks[i] = (i * 2).toString();
     }
   }
-  initialMarks[i-1] = (i*2-2).toString();
-  setRadiusMax(i-1);
+  initialMarks[i - 1] = (i * 2 - 2).toString();
+  setRadiusMax(i - 1);
   return initialMarks;
 }
 
@@ -318,13 +333,66 @@ const setCircle = (dispRadius, setting, mediumIndex, setBitmapChangeObject) => {
   const totalPointsX = setting.totalPointsX;
   const totalPointsY = setting.totalPointsY;
   let inputbitmap = Array.from({ length: totalPointsX }).map(() => Array.from({ length: totalPointsY }).fill(0));
+  const centerX=Math.ceil(totalPointsX/2);
+  const centerY=Math.ceil(totalPointsY/2);
   for (let i = 0; i < totalPointsX; i++) {
     for (let j = 0; j < totalPointsY; j++) {
-      let distanceFromCenter = Math.sqrt(Math.pow(totalPointsX / 2 - i, 2) + Math.pow(totalPointsY / 2 - j, 2));
-      if (distanceFromCenter <= radius) {
+      let distanceFromCenter = Math.sqrt(Math.pow(centerX - i, 2) + Math.pow(centerY - j, 2));
+      if (distanceFromCenter<= radius) {
         inputbitmap[i][j] = mediumIndex;
       }
     }
   }
   setBitmapChangeObject(inputbitmap);
+}
+
+const setOpenCavity = (dispRadius, setting, mediumIndex, setBitmapChangeObject) => {
+  let radius = dispRadius * 2;
+  const totalPointsX = setting.totalPointsX;
+  const totalPointsY = setting.totalPointsY;
+  let inputbitmap = Array.from({ length: totalPointsX }).map(() => Array.from({ length: totalPointsY }).fill(0));
+  if (radius <= 10) {
+    console.log("radius :::" + radius);
+    setBitmapChangeObject(inputbitmap);
+    return;
+  }
+  const xLen = Math.ceil(radius * 0.8);
+  const yLen = Math.ceil(radius);
+  const xHalfLen = Math.ceil(xLen / 2);
+  const yHalfLen = Math.ceil(yLen / 2);
+  const bold = 3;
+  const cavityCover = Math.ceil((yLen - 2 * bold) * 0.26);
+
+  const centerX = Math.ceil(totalPointsX / 2);
+  const centerY = Math.ceil(totalPointsY / 2);
+
+
+  for (let i = centerX - xHalfLen; i < centerX + xHalfLen; i++) {
+    for (let n = centerY - yHalfLen; n < centerY - yHalfLen + bold; n++) {
+      inputbitmap[i][n] = mediumIndex;
+    }
+  }
+  for (let i = centerX - xHalfLen; i < centerX + xHalfLen; i++) {
+    for (let n = centerY + yHalfLen - bold; n < centerY + yHalfLen; n++) {
+      inputbitmap[i][n] = mediumIndex;
+    }
+  }
+  for (let i = centerX + xHalfLen - bold; i < centerX + xHalfLen; i++) {
+    for (let n = centerY - yHalfLen; n < centerY + yHalfLen; n++) {
+      inputbitmap[i][n] = mediumIndex;
+    }
+  }
+  for (let i = centerX - xHalfLen; i < centerX - xHalfLen + bold; i++) {
+    for (let n = centerY - yHalfLen + bold; n < centerY - yHalfLen + bold + cavityCover; n++) {
+      inputbitmap[i][n] = mediumIndex;
+    }
+  }
+  for (let i = centerX - xHalfLen; i < centerX - xHalfLen + bold; i++) {
+    for (let n = centerY + yHalfLen - bold - cavityCover; n < centerY + yHalfLen - bold; n++) {
+      inputbitmap[i][n] = mediumIndex;
+    }
+  }
+  setBitmapChangeObject(inputbitmap);
+
+
 }

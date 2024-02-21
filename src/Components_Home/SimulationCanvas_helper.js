@@ -19,8 +19,9 @@ function makeFDTDInput(data) {
   let dx = fieldX / nx;
   nx += 2 * pmlL;
   let ny = Math.ceil(fieldY / dx);
+
   let scatteredPointsY = parseInt((ny - totalPointsY) / 2);
-  ny += 2 * pmlL;
+  ny=totalPointsY+2*scatteredPointsY+2*pmlL;
   const bitmap = check_EMPTYBITMAP(data.bitmap, totalPointsX, totalPointsY);
   //let bitmap = makeBitmap();
 
@@ -34,7 +35,7 @@ function makeFDTDInput(data) {
   const boundary = {
     TopLeft: { x: pmlL + scatteredPointsX, y: pmlL + scatteredPointsY },
     TopRight: { x: pmlL + scatteredPointsX + totalPointsX - 1, y: pmlL + scatteredPointsY },
-    BottomRight: { x: pmlL + scatteredPointsX + totalPointsX - 1, y: pmlL + scatteredPointsY + totalPointsY - 1 },
+    BottomRight: { x: pmlL + scatteredPointsX + totalPointsX - 1, y: pmlL + scatteredPointsY + totalPointsY -1 },
     BottomLeft: { x: pmlL + scatteredPointsX, y: pmlL + scatteredPointsY + totalPointsY - 1 }
   };
 
@@ -226,7 +227,7 @@ export class FDTD2D_PML {
     this.dt = fdtd_input.dt;
     this.simulationNum = 0;
     this.t = 0;
-    this.Ta = (this.dx / c) * 0.3;
+    this.Ta = (this.dx / c) * 0.35;
     this.Z0 = Math.sqrt(M0 / E0);
     this.k0 = 2.0 * Math.PI / (c / this.freq);
     const theta_in = this.theta * Math.PI / 180;
@@ -237,39 +238,26 @@ export class FDTD2D_PML {
 
     const nx = this.nx;
     const ny = this.ny;
-    console.log(nx + " ny: " + ny);
     const pmlL = this.pmlL;
     const dx = this.dx;
     const dt = this.dt;
 
-    //this.ll = Math.sqrt(2.0) * (this.nx - 2 * this.scatteredPointsX - 2 * this.pmlL + 0.5) / 2 * dx; //解析領域の一辺の幅に√2/2をかけたもの
-
-    //=Math.sin(this.theta*Math.PI/180);
-    console.log(this.totalPointsX + " :;;; " + this.totalPointsY);
-    //let rr=0.5*this.totalPointsX*costT+0.5*this.totalPointsY*sinT;
-
-    let rr = this.totalPointsX > this.totalPointsY ? this.totalPointsX / this.totalPointsY : this.totalPointsY / this.totalPointsX;
-
-    this.ll = 0.53 * Math.sqrt(this.totalPointsX * this.totalPointsX + this.totalPointsY * this.totalPointsY) * dx;
+    this.ll = 0.5 * Math.sqrt(this.totalPointsX * this.totalPointsX + this.totalPointsY * this.totalPointsY) * dx;
     if (this.theta === 0) {
-      this.ll = 0.1 * Math.sqrt(this.totalPointsX * this.totalPointsX + this.totalPointsY * this.totalPointsY) * dx;
+      this.ll = 0.4 * Math.sqrt(this.totalPointsX * this.totalPointsX + this.totalPointsY * this.totalPointsY) * dx;
     } else if (this.theta <= 90) {
-      this.ll = 0.35 * Math.sqrt(this.totalPointsX * this.totalPointsX + this.totalPointsY * this.totalPointsY) * dx;
+      this.ll = 0.4 * Math.sqrt(this.totalPointsX * this.totalPointsX + this.totalPointsY * this.totalPointsY) * dx;
 
     } else if (this.theta >= 180 && this.theta < 270) {
       this.ll = 0.4 * Math.sqrt(this.totalPointsX * this.totalPointsX + this.totalPointsY * this.totalPointsY) * dx;
     } else if (this.theta >= 270) {
-      this.ll = 0.1 * Math.sqrt(this.totalPointsX * this.totalPointsX + this.totalPointsY * this.totalPointsY) * dx;
+      this.ll = 0.4 * Math.sqrt(this.totalPointsX * this.totalPointsX + this.totalPointsY * this.totalPointsY) * dx;
     }
-    if (rr > 1.5) {
-      this.ll += (rr-1) * Math.sqrt(this.totalPointsX / 2 * this.totalPointsX / 2 + this.totalPointsY / 2 * this.totalPointsY / 2) * dx;
-    }
-    //this.ll=this.ll+this.ll*((rr-1)/7);
+
     this.omega = 2 * Math.PI * this.freq;
-    console.log("LLは : " + this.ll);
     this.y = []; this.z = [];
-    for (let i = 0; i < nx; i++)this.y[i] = (i - (nx) / 2) * this.dx;
-    for (let n = 0; n < ny; n++)this.z[n] = (n - (ny) / 2) * this.dx;
+    for (let i = 0; i < nx; i++)this.z[i] = (i - (nx) / 2) * this.dx;
+    for (let n = 0; n < ny; n++)this.y[n] = (n - (ny) / 2) * this.dx;
 
 
 
@@ -306,7 +294,6 @@ export class FDTD2D_PML {
         this.bm[i + hikuX][n + hikuY] = m.bm;
       }
     }
-
 
     const order = 4;
     const M = 8;
@@ -475,17 +462,13 @@ export class FDTD2D_PML {
     }
   }
   cal_Ez_SFTF() {
-    const z_front = -this.ll + (this.omega / this.k0) * this.t;
+    const z_front = -this.ll + (this.omega / this.k0) * (this.t);
 
     //左のEz
     for (let n = this.TopLeft.y; n <= this.BottomLeft.y; n++) {
       const i = this.TopLeft.x;
       const yy = this.y[n]; const xx = this.z[i] - 0.5 * this.dx;
       const lt = yy * this.sinT + xx * this.cosT;
-      //if (n === this.TopLeft.y) {
-      //  console.error("------");
-      //  console.log(z_front + " : " + lt);
-      //}
       if (lt < z_front) {
         const Hy_inc = 1 / this.Z0 * Math.sin(this.omega * (this.t - this.Ta) - this.k0 * (lt + this.ll)) * this.cosT *
           this.func_amplitudeScaler((z_front - lt) / this.c / this.dt);
@@ -536,7 +519,7 @@ export class FDTD2D_PML {
     //左のHy
     for (let n = this.TopLeft.y; n <= this.BottomLeft.y; n++) {
       const i = this.TopLeft.x - 1;
-      const yy = this.y[n] - 0.5 * this.dx; const xx = this.z[i + 1];
+      const yy = this.y[n] ; const xx = this.z[i + 1]-this.dx/4;
       const lt = yy * this.sinT + xx * this.cosT;
       if (lt < z_front) {
         const Ex_inc = Math.sin(this.omega * (this.t - this.Ta) - this.k0 * (lt + this.ll)) *
@@ -547,7 +530,7 @@ export class FDTD2D_PML {
     //右のHy
     for (let n = this.TopRight.y; n <= this.BottomRight.y; n++) {
       const i = this.TopRight.x;
-      const yy = this.y[n]; const xx = this.z[i];
+      const yy = this.y[n]; const xx = this.z[i]+this.dx/4;
       const lt = yy * this.sinT + xx * this.cosT;
       if (lt < z_front) {
         const Ex_inc = Math.sin(this.omega * (this.t - this.Ta) - this.k0 * (lt + this.ll)) *
@@ -555,7 +538,6 @@ export class FDTD2D_PML {
         this.Hy[i][n] += this.bm[i][n] * Ex_inc;
       }
     }
-
   }
   cal_Hx_SFTF() {
     const z_front = -this.ll + (this.omega / this.k0) * (this.t);
@@ -563,7 +545,7 @@ export class FDTD2D_PML {
 
     for (let i = this.TopLeft.x; i <= this.TopRight.x; i++) {
       const n = this.TopLeft.y - 1;
-      const yy = this.y[n + 1]; const xx = this.z[i];
+      const yy = this.y[n + 1]-this.dx/4; const xx = this.z[i];
       const lt = yy * this.sinT + xx * this.cosT;
       if (lt < z_front) {
         const Ex_inc = Math.sin(this.omega * (this.t - this.Ta) - this.k0 * (lt + this.ll)) *
@@ -574,7 +556,7 @@ export class FDTD2D_PML {
     //下のHx
     for (let i = this.BottomLeft.x; i <= this.BottomRight.x; i++) {
       const n = this.BottomLeft.y;
-      const yy = this.y[n]; const xx = this.z[i];
+      const yy = this.y[n]+this.dx/4; const xx = this.z[i];
       const lt = yy * this.sinT + xx * this.cosT;
       if (lt < z_front) {
         const Ex_inc = Math.sin(this.omega * (this.t - this.Ta) - this.k0 * (lt + this.ll)) *
@@ -682,10 +664,10 @@ export class ColorCode {
     let slopeL;
     let shiftL;
     if (index === 0) {
-      slopeF = -0.2;
-      shiftF = 32.0;
+      slopeF = -0.25;
+      shiftF = 25.0;
       slopeL = -0.08;
-      shiftL = 72.0;
+      shiftL = 70.0;
     } else {
       slopeF = -0.3;
       shiftF = 35.0;

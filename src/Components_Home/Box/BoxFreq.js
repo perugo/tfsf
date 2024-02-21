@@ -5,7 +5,7 @@ import Select from 'react-select'
 import './../../Components/reactSelect.css';
 import {
   Box, FrontHeader, FrontHeaderInner, TitleWrapper, CustomH3, FrontBody,
-  ColumnLayout, GridColumn, FrontHeaderLeft
+  ColumnLayout, GridColumn, FrontHeaderLeft,customStyles
 } from './StyledBoxComponents';
 const InputText = styled.input`
   width:120px;
@@ -92,42 +92,7 @@ const Exponential = styled.div`
   height:100%;
   width:100%;
 `
-const customStyles = {
-  control: (provided) => ({
-    ...provided,
-    height: '25px',
-    minHeight: '25px',
-    fontSize: '15px',
-  }),
-  menu: (provided) => ({
-    ...provided,
-  }),
-  // オプション（選択肢）のスタイル
-  option: (provided) => ({
-    ...provided,
-    fontSize: '15px',
-  }),
-  valueContainer: (provided) => ({
-    ...provided,
-    height: '25px',
-    padding: '0 6px',
-    fontSize: '15px'
-  }),
-  input: (provided) => ({
-    ...provided,
-    margin: '0px',
-    fontSize: '15px'
-  }),
-  singleValue: (provided) => ({
-    ...provided,
-    fontSize: '15px',  // フォントサイズを設定
-  }),
-  indicatorsContainer: (provided) => ({
-    ...provided,
-    height: '25px',
-    fontSize: '15px'
-  }),
-};
+
 export const BoxFreq = ({
   setting, setSetting }) => {
   const options = [
@@ -222,16 +187,6 @@ export const BoxFreq = ({
     const matchedOptions = meterOptions.find(option => option.value === value);
     return matchedOptions ? matchedOptions.label : "";
   }
-  const ExponentialCell = ({ mantissa, exponent }) => (
-    <LabelCell>
-      <Exponential>
-        <MantissaWrapper>
-          <Mantissa>{mantissa}</Mantissa>
-        </MantissaWrapper>
-        <Exponent>{exponent}</Exponent>
-      </Exponential>
-    </LabelCell>
-  );
   const handleOnChange = (option) => {
     setSelectedOption(option);
     setHzExponent(option.value);
@@ -287,7 +242,7 @@ export const BoxFreq = ({
                   value={selectedMeterOption}
                   onChange={handleMeterChange}
                 />
-                <FreeSpaceTextWrapper style={{paddingLeft:"20px"}}><FreeSpaceText>空間離散間隔 [λ/格子幅] : </FreeSpaceText><FreeSpaceText style={{ fontSize: "18px", minWidth: "20px", textAlign: "right", paddingRight: "10px", paddingLeft: "5px" }}>{lambdaperDx}</FreeSpaceText></FreeSpaceTextWrapper>
+                <FreeSpaceTextWrapper style={{paddingLeft:"20px"}}><FreeSpaceText>自由空間における分割数 [ λ / 格子幅 ] : </FreeSpaceText><FreeSpaceText style={{ fontSize: "18px", minWidth: "20px", textAlign: "right", paddingRight: "10px", paddingLeft: "5px" }}>{lambdaperDx}</FreeSpaceText></FreeSpaceTextWrapper>
               </JustFlexRow>
 
             </InputItemGrid>
